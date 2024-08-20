@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import {
   Table,
   TableHeader,
@@ -15,6 +15,14 @@ import {
   Chip,
   User,
   Pagination,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+  Checkbox,
+  Link,
 } from "@nextui-org/react";
 import { PlusIcon } from "../components/PlusIcon";
 import { VerticalDotsIcon } from "../components/VericalDotsIcon";
@@ -32,17 +40,23 @@ const statusColorMap = {
 const INITIAL_VISIBLE_COLUMNS = ["name", "role", "status", "actions"];
 
 export default function ClientPage() {
-  // El código que tenías en App.jsx
-  const [filterValue, setFilterValue] = React.useState("");
-  const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
-  const [visibleColumns, setVisibleColumns] = React.useState(new Set(INITIAL_VISIBLE_COLUMNS));
-  const [statusFilter, setStatusFilter] = React.useState("all");
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [sortDescriptor, setSortDescriptor] = React.useState({
+  const [filterValue, setFilterValue] = useState("");
+  const [selectedKeys, setSelectedKeys] = useState(new Set([]));
+  const [visibleColumns, setVisibleColumns] = useState(new Set(INITIAL_VISIBLE_COLUMNS));
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [sortDescriptor, setSortDescriptor] = useState({
     column: "age",
     direction: "ascending",
   });
-  const [page, setPage] = React.useState(1);
+  const [page, setPage] = useState(1);
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [modalContent, setModalContent] = useState("");
+
+  const handleOpenModal = useCallback((content) => {
+    setModalContent(content);
+    onOpen();
+  }, [onOpen]);
 
   const hasSearchFilter = Boolean(filterValue);
 
@@ -125,8 +139,8 @@ export default function ClientPage() {
                 </Button>
               </DropdownTrigger>
               <DropdownMenu>
-                <DropdownItem>View</DropdownItem>
-                <DropdownItem>Edit</DropdownItem>
+                <DropdownItem onPress={() => handleOpenModal("View")}>View</DropdownItem>
+                <DropdownItem onPress={() => handleOpenModal("Edit")}>Edit</DropdownItem>
                 <DropdownItem>Delete</DropdownItem>
               </DropdownMenu>
             </Dropdown>
@@ -135,7 +149,7 @@ export default function ClientPage() {
       default:
         return cellValue;
     }
-  }, []);
+  }, [handleOpenModal]);
 
   const onNextPage = React.useCallback(() => {
     if (page < pages) {
@@ -224,7 +238,7 @@ export default function ClientPage() {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            <Button color="primary" endContent={<PlusIcon />}>
+            <Button color="primary" endContent={<PlusIcon />} onPress={() => handleOpenModal("Add New")}>
               Add New
             </Button>
           </div>
@@ -245,7 +259,7 @@ export default function ClientPage() {
         </div>
       </div>
     );
-  }, [filterValue, onSearchChange, statusFilter, visibleColumns, onRowsPerPageChange, onClear]);
+  }, [filterValue, onSearchChange, statusFilter, visibleColumns, onRowsPerPageChange, onClear, handleOpenModal]);
 
   const bottomContent = React.useMemo(() => {
     return (
@@ -277,40 +291,88 @@ export default function ClientPage() {
   }, [selectedKeys, filteredItems.length, page, pages, onPreviousPage, onNextPage]);
 
   return (
-    <Table
-      aria-label="Example table with custom cells, pagination and sorting"
-      isHeaderSticky
-      bottomContent={bottomContent}
-      bottomContentPlacement="outside"
-      classNames={{
-        wrapper: "max-h-[382px]",
-      }}
-      selectedKeys={selectedKeys}
-      selectionMode="multiple"
-      sortDescriptor={sortDescriptor}
-      topContent={topContent}
-      topContentPlacement="outside"
-      onSelectionChange={setSelectedKeys}
-      onSortChange={setSortDescriptor}
-    >
-      <TableHeader columns={headerColumns}>
-        {(column) => (
-          <TableColumn
-            key={column.uid}
-            align={column.uid === "actions" ? "center" : "start"}
-            allowsSorting={column.sortable}
-          >
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody emptyContent={"No users found"} items={sortedItems}>
-        {(item) => (
-          <TableRow key={item.id}>
-            {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <>
+      <Table
+        aria-label="Example table with custom cells, pagination and sorting"
+        isHeaderSticky
+        bottomContent={bottomContent}
+        bottomContentPlacement="outside"
+        classNames={{
+          wrapper: "max-h-[382px]",
+        }}
+        selectedKeys={selectedKeys}
+        selectionMode="multiple"
+        sortDescriptor={sortDescriptor}
+        topContent={topContent}
+        topContentPlacement="outside"
+        onSelectionChange={setSelectedKeys}
+        onSortChange={setSortDescriptor}
+      >
+        <TableHeader columns={headerColumns}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === "actions" ? "center" : "start"}
+              allowsSorting={column.sortable}
+            >
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody emptyContent={"No users found"} items={sortedItems}>
+          {(item) => (
+            <TableRow key={item.id}>
+              {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="top-center">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">{modalContent}</ModalHeader>
+              <ModalBody>
+                <Input
+                  autoFocus
+                  
+                  label="Email"
+                  placeholder="Enter your email"
+                  variant="bordered"
+                />
+                <Input
+                  
+                  label="Password"
+                  placeholder="Enter your password"
+                  type="password"
+                  variant="bordered"
+                />
+                <div className="flex py-2 px-1 justify-between">
+                  <Checkbox
+                    classNames={{
+                      label: "text-small",
+                    }}
+                  >
+                    Remember me
+                  </Checkbox>
+                  <Link color="primary" href="#" size="sm">
+                    Forgot password?
+                  </Link>
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="flat" onPress={onClose}>
+                  Close
+                </Button>
+                <Button color="primary" onPress={onClose}>
+                  Sign in
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </>
   );
 }
