@@ -337,15 +337,36 @@ export default function ClientPage() {
                 <Input
                   autoFocus
                   
-                  label="Email"
-                  placeholder="Enter your email"
+                  label="Nombre"
+                  placeholder="Enter your name"
                   variant="bordered"
                 />
                 <Input
                   
-                  label="Password"
-                  placeholder="Enter your password"
-                  type="password"
+                  label="Apellido"
+                  placeholder="Enter your second name"
+                  // type="password"
+                  variant="bordered"
+                />
+                <Input
+                  
+                  label="Email"
+                  placeholder="Enter your email"
+                  // type="password"
+                  variant="bordered"
+                />
+                <Input
+                  
+                  label="Telefono"
+                  placeholder="Enter your cel number"
+                  // type="password"
+                  variant="bordered"
+                />
+                <Input
+                  
+                  label="Direccion"
+                  placeholder="Enter your address"
+                  // type="password"
                   variant="bordered"
                 />
                 <div className="flex py-2 px-1 justify-between">
@@ -356,17 +377,14 @@ export default function ClientPage() {
                   >
                     Remember me
                   </Checkbox>
-                  <Link color="primary" href="#" size="sm">
-                    Forgot password?
-                  </Link>
                 </div>
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="flat" onPress={onClose}>
-                  Close
+                  Cancelar
                 </Button>
                 <Button color="primary" onPress={onClose}>
-                  Sign in
+                  Guardar
                 </Button>
               </ModalFooter>
             </>
